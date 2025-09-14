@@ -1,35 +1,33 @@
 import { Sequelize } from 'sequelize';
+import path from 'path';
 
-const databaseUrl = process.env.DATABASE_URL || 'sqlite:data/slack_connect.db';
-const isUsingSQLite = databaseUrl.startsWith('sqlite:');
+// Check if we're in production (Render) or development (local)
+const isProduction = process.env.NODE_ENV === 'production';
 
-export const sequelize = new Sequelize(databaseUrl, {
-  dialect: isUsingSQLite ? 'sqlite' : 'postgres',
-  logging: false,
-  define: {
-    underscored: true,
-    freezeTableName: false,
-    timestamps: true,
-  }
-});
+export const sequelize = isProduction
+  ? new Sequelize(process.env.DATABASE_URL!, {
+      dialect: 'postgres',
+      logging: false,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
+    })
+  : new Sequelize({
+      dialect: 'sqlite',
+      storage: path.join(__dirname, '../../data/slack_connect.db'),
+      logging: false
+    });
 
-export async function connectDatabase(): Promise<void> {
+export const connectDatabase = async (): Promise<void> => {
   try {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully');
-    await sequelize.query('SELECT 1 as test');
-  } catch (error: any) {
-    console.error('❌ Failed to connect to database:', error.message);
-    throw error;
+    console.log(`📊 Using ${isProduction ? 'PostgreSQL (Production)' : 'SQLite (Development)'}`);
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    process.exit(1);
   }
-}
-
-export async function closeDatabase(): Promise<void> {
-  try {
-    await sequelize.close();
-    console.log('✅ Database connection closed');
-  } catch (error: any) {
-    console.error('❌ Error closing database connection:', error);
-    throw error;
-  }
-}
+};

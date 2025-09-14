@@ -7,11 +7,10 @@ export class ScheduledMessage extends Model {
   public channelId!: string;
   public message!: string;
   public scheduledTime!: Date;
-  public status!: 'pending' | 'processing' | 'sent' | 'cancelled' | 'failed';
+  public status!: 'pending' | 'sent' | 'cancelled' | 'failed';
   public sentAt?: Date;
   public errorMessage?: string;
-  public retryCount!: number;
-  public slackMessageId?: string;
+  
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -42,7 +41,7 @@ ScheduledMessage.init({
     field: 'scheduled_time'
   },
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('pending', 'sent', 'cancelled', 'failed'),
     allowNull: false,
     defaultValue: 'pending'
   },
@@ -55,20 +54,9 @@ ScheduledMessage.init({
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'error_message'
-  },
-  retryCount: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-    field: 'retry_count'
-  },
-  slackMessageId: {
-    type: DataTypes.STRING,
-    allowNull: true,
-    field: 'slack_message_id'
   }
 }, {
   sequelize,
   tableName: 'scheduled_messages',
-  underscored: true,
+  underscored: true
 });

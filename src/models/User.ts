@@ -6,10 +6,12 @@ export class User extends Model {
   public slackUserId!: string;
   public teamId!: string;
   public accessToken!: string;
-  public refreshToken?: string;
-  public tokenExpiresAt?: Date;
+  public refreshToken?: string;        // ADD THIS
+  public tokenExpiresAt?: Date;        // ADD THIS
+
   public teamName?: string;
   public userName?: string;
+  
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -37,15 +39,16 @@ User.init({
     field: 'access_token'
   },
   refreshToken: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-    field: 'refresh_token'
-  },
-  tokenExpiresAt: {
-    type: DataTypes.DATE,
-    allowNull: true,
-    field: 'token_expires_at'
-  },
+  type: DataTypes.TEXT,
+  allowNull: true,
+  field: 'refresh_token'
+},
+tokenExpiresAt: {
+  type: DataTypes.DATE,
+  allowNull: true,
+  field: 'token_expires_at'
+},
+
   teamName: {
     type: DataTypes.STRING,
     field: 'team_name'
@@ -57,5 +60,5 @@ User.init({
 }, {
   sequelize,
   tableName: 'users',
-  underscored: true,
+  underscored: true
 });
