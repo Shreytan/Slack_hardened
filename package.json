@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "dev": "nodemon src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
@@ -25,16 +25,20 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "morgan": "^1.10.1",
     "node-cron": "^4.2.1",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^24.4.0",
     "@types/supertest": "^6.0.3",
+    "@types/winston": "^2.4.4",
     "jest": "^30.1.3",
     "jest-environment-node": "^30.1.2",
     "nodemon": "^3.1.10",

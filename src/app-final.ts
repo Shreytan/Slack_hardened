@@ -45,8 +45,8 @@ app.use(cors({
 
 // Logging
 app.use(morgan('combined', { 
-  stream: { write: (message) => logger.http(message.trim()) },
-  skip: (req) => req.url.includes('/health') || req.url.includes('/metrics')
+  stream: { write: (message: string) => logger.http(message.trim()) },
+  skip: (req: express.Request) => req.url.includes('/health') || req.url.includes('/metrics')
 }));
 
 // Metrics
@@ -114,8 +114,8 @@ const startServer = async () => {
     await import('./models/ScheduledMessage');
     
     console.log('í´„ Loading routes...');
-    const authRoutes = (await import('./routes/auth')).default;
-    const slackRoutes = (await import('./routes/slack')).default;
+    const { default: authRoutes } = await import('./routes/auth');
+    const { default: slackRoutes } = await import('./routes/slack');
     
     app.use('/api/auth', authRoutes);
     app.use('/api/slack', slackRoutes);
