@@ -28,7 +28,7 @@ export class CustomError extends Error implements AppError {
   }
 }
 
-export const createValidationError = (message: string) =>
+export const createValidationError = (message: string, details?: any) =>
   new CustomError(message, 400, 'VALIDATION_ERROR', true);
 
 export const createNotFoundError = (resource: string) =>
@@ -39,7 +39,9 @@ export const createUnauthorizedError = (message: string = 'Unauthorized') =>
 
 const normalizeError = (error: any): AppError => {
   if (error instanceof ZodError) {
-    return createValidationError('Input validation failed');
+    // Zod v4+ uses 'issues' instead of 'errors'
+    const errorDetails = error.issues || (error as any).errors || [];
+    return createValidationError('Input validation failed', errorDetails);
   }
   
   if (error instanceof ValidationError) {
