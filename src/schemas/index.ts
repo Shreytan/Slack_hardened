@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Environment validation schema
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('8000').transform(Number),
@@ -9,7 +8,7 @@ export const envSchema = z.object({
   SLACK_CLIENT_SECRET: z.string().optional(),
   SLACK_REDIRECT_URI: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:3000'),
-  ALLOWED_ORIGINS: z.string().default('http://localhost:3000').transform(s => s.split(',')),
+  ALLOWED_ORIGINS: z.string().default('http://localhost:3000').transform((s: string) => s.split(',')),
   ENCRYPTION_KEY: z.string().optional(),
   LOG_LEVEL: z.string().default('info'),
 });
@@ -18,7 +17,6 @@ export const validateEnv = () => {
   return envSchema.parse(process.env);
 };
 
-// Request validation schemas
 export const authStatusParamsSchema = z.object({
   userId: z.string().min(1)
 });

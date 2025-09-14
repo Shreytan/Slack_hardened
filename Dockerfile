@@ -1,68 +1,55 @@
-# Multi-stage Dockerfile for production deployment
+# Multi-stage build for production optimization
 FROM node:18-alpine AS builder
 
-WORKDIR /app
+# Install dependencies for native modules
+RUN apk add --no-cache python3 make g++
 
-# Install system dependencies for building native modules
-RUN apk add --no-cache python3 make g++ git
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install all dependencies (including devDependencies)
-RUN npm ci --include=dev
+# Install all dependencies
+RUN npm ci
 
 # Copy source code
 COPY src/ ./src/
-COPY migrations/ ./migrations/
-COPY .sequelizerc ./
 
-# Build application
+# Build TypeScript
 RUN npm run build
-
-# Remove dev dependencies
-RUN npm prune --production
 
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S slackapp -u 1001 -G nodejs
-
-# Set working directory
 WORKDIR /app
 
-# Copy built application from builder stage
-COPY --from=builder --chown=slackapp:nodejs /app/dist ./dist
-COPY --from=builder --chown=slackapp:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=slackapp:nodejs /app/package*.json ./
-COPY --from=builder --chown=slackapp:nodejs /app/migrations ./migrations
-COPY --from=builder --chown=slackapp:nodejs /app/.sequelizerc ./
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
 
 # Create logs directory
-RUN mkdir -p /app/logs && chown slackapp:nodejs /app/logs
+RUN mkdir -p logs && chown -R nodejs:nodejs logs
 
-# Switch to non-root user
-USER slackapp
-
-# Expose port
-EXPOSE 5000
+# Set ownership
+RUN chown -R nodejs:nodejs /app
+USER nodejs
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:5000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:'+process.env.PORT+'/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=5000
+# Expose port
+EXPOSE 8000
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
-
-# Default command
-CMD ["npm", "start"]
+# Start application
+CMD ["node", "dist/app-final.js"]
