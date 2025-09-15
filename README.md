@@ -377,5 +377,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **GitHub Discussions:** [Community discussions and Q&A](https://github.com/Shreytan/Slack_hardened/discussions)
 - **API Documentation:** [Complete endpoint reference](https://slack-hardened.onrender.com/api/test)
 - **Live Demo:** [Interactive testing environment](https://slack-hardened.onrender.com)
-
-Want to suggest a feature? Please submit it [here](https://github.com/Shreytan/Slack_hardened/discussions/categories/fe
